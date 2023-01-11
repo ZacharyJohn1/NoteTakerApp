@@ -4,7 +4,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-const data = require("./db/db.json");
+const db = require("./db/db.json");
 app.use(express.static("public"));
 
 // middleware
@@ -88,6 +88,21 @@ app.post("/api/notes", (req, res) => {
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "/public/index.html"))
 );
+
+app.delete('/api/notes/:id', (req, res) => {
+  console.info(`${req.method} request received to delete note.`);
+  const currentNote = db.findIndex(({ id }) => id === req.params.id);
+  if (currentNote >= 0) {
+  db.splice(currentNote, 1);
+  res.status(200).json(`The note has been deleted`);
+} else {
+res.status(500).json('Note could not be deleted.')
+  }
+  fs.writeFile('./db/db.json', JSON.stringify(db), (err) =>
+  err ? console.error(err) : console.log('Note list has been updated.')
+      )}
+); 
+
 app.listen(PORT, () =>
   console.log(`Example app listening at http://localhost:${PORT}`)
 );
